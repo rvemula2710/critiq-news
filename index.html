@@ -117,6 +117,12 @@
       padding: 40px;
       opacity: 0.7;
     }
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      opacity: 0.6;
+    }
   </style>
 </head>
 
@@ -155,26 +161,44 @@
       setActive(el);
       showLoading();
 
-      const res = await fetch(`${BASE_URL}/news?q=${q}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`${BASE_URL}/news?q=${q}`);
+        const data = await res.json();
 
-      allArticles = data.articles || [];
-      visible = 6;
+        allArticles = data.articles || [];
+        visible = 6;
 
-      render();
+        if(allArticles.length === 0){
+          showEmpty();
+        } else {
+          render();
+        }
+
+      } catch {
+        showError();
+      }
     }
 
     async function loadTrending(el){
       setActive(el);
       showLoading();
 
-      const res = await fetch(`${BASE_URL}/trending`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`${BASE_URL}/trending`);
+        const data = await res.json();
 
-      allArticles = data.articles || [];
-      visible = 6;
+        allArticles = data.articles || [];
+        visible = 6;
 
-      render();
+        if(allArticles.length === 0){
+          showEmpty();
+        } else {
+          render();
+        }
+
+      } catch {
+        showError();
+      }
     }
 
     function handleSearch(e){
@@ -200,7 +224,18 @@
     }
 
     function showLoading(){
-      document.getElementById("news").innerHTML = "<div class='loading'>Loading news...</div>";
+      document.getElementById("news").innerHTML =
+        "<div class='loading'>Loading news...</div>";
+    }
+
+    function showError(){
+      document.getElementById("news").innerHTML =
+        "<div class='loading'>Failed to load</div>";
+    }
+
+    function showEmpty(){
+      document.getElementById("news").innerHTML =
+        "<div class='empty'>No news available</div>";
     }
 
     function setActive(el){
@@ -208,6 +243,7 @@
       if(el) el.classList.add("active");
     }
 
+    // default load
     loadNews("india");
 
   </script>
