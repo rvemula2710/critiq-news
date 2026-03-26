@@ -4,36 +4,79 @@
   <title>Critiq News</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background: radial-gradient(circle at top, #1e293b, #020617 80%);
       color: white;
+      overflow-x: hidden;
     }
 
+    /* ===== HEADER ===== */
     header {
       position: sticky;
       top: 0;
       backdrop-filter: blur(20px);
       background: rgba(255,255,255,0.05);
       border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding: 15px;
+      padding: 20px;
       text-align: center;
       z-index: 100;
     }
 
-    h1 {
-      margin: 0;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+    /* ===== GLASS LOGO ===== */
+    .logo-glass-wrap {
+      display: inline-block;
+      padding: 14px 26px;
+      border-radius: 20px;
+      position: relative;
+
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.12);
+
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      overflow: hidden;
+
+      animation: floatSoft 6s ease-in-out infinite;
     }
 
+    /* Liquid reflection layer */
+    .logo-glass-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: radial-gradient(circle at var(--x,50%) var(--y,50%), rgba(255,255,255,0.25), transparent 40%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .logo-glass-wrap:hover::after {
+      opacity: 1;
+    }
+
+    @keyframes floatSoft {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .logo-text span {
+      color: #9ca3af;
+    }
+
+    /* ===== CONTROLS ===== */
     .controls {
-      margin-top: 10px;
+      margin-top: 15px;
     }
 
     input {
@@ -45,10 +88,6 @@
       outline: none;
       background: rgba(255,255,255,0.08);
       color: white;
-    }
-
-    input::placeholder {
-      color: #aaa;
     }
 
     button {
@@ -73,6 +112,7 @@
       margin-top: 10px;
     }
 
+    /* ===== NEWS GRID ===== */
     #news {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -93,25 +133,22 @@
       padding: 15px;
       border: 1px solid rgba(255,255,255,0.12);
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      transition: 0.25s ease;
+      overflow: hidden;
+      transition: 0.25s;
     }
 
-    .card::before {
+    /* Liquid hover for cards */
+    .card::after {
       content: "";
       position: absolute;
-      inset: -1px;
+      inset: 0;
       border-radius: 20px;
-      background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(255,255,255,0.15),
-        transparent
-      );
+      background: radial-gradient(circle at var(--x,50%) var(--y,50%), rgba(255,255,255,0.2), transparent 50%);
       opacity: 0;
-      transition: 0.3s;
+      transition: opacity 0.3s;
     }
 
-    .card:hover::before {
+    .card:hover::after {
       opacity: 1;
     }
 
@@ -128,13 +165,10 @@
 
     .card small {
       color: #9ca3af;
-      font-size: 12px;
     }
 
     .card h3 {
       margin: 10px 0;
-      font-size: 17px;
-      font-weight: 500;
     }
 
     .card p {
@@ -152,13 +186,14 @@
       padding: 50px;
     }
   </style>
-
 </head>
 
 <body>
 
 <header>
-  <h1>📰 Critiq News</h1>
+  <div class="logo-glass-wrap" id="logoGlass">
+    <h1 class="logo-text">Critiq<span>.</span></h1>
+  </div>
 
   <div class="controls">
     <input type="text" id="searchInput" placeholder="Search news...">
@@ -178,6 +213,23 @@
 
 const BASE_URL = "https://news-backend-9jt9.onrender.com/news";
 
+/* ===== LIQUID GLASS EFFECT ===== */
+function applyLiquidEffect(selector){
+  document.querySelectorAll(selector).forEach(el => {
+    el.addEventListener("mousemove", e => {
+      const rect = el.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      el.style.setProperty('--x', x + '%');
+      el.style.setProperty('--y', y + '%');
+    });
+  });
+}
+
+applyLiquidEffect('.card');
+applyLiquidEffect('#logoGlass');
+
+/* ===== APP LOGIC ===== */
 function setCategory(category, btn){
   document.querySelectorAll(".categories button").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -228,6 +280,8 @@ function displayNews(articles){
       </a>
     `;
   });
+
+  applyLiquidEffect('.card'); // reapply after render
 }
 
 function getSummary(text) {
