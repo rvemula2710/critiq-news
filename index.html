@@ -23,33 +23,26 @@
       z-index: 100;
     }
 
-    /* ===== MODERN LOGO ===== */
-    .logo-modern-wrap {
+    /* ===== LOGO ===== */
+    .logo-wrap {
       text-align: center;
       margin-bottom: 15px;
     }
 
-    .logo-modern {
+    .logo {
       font-size: 30px;
       font-weight: 600;
-      letter-spacing: 1px;
-      background: linear-gradient(90deg, #ffffff, #cbd5f5);
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #ffffff, #d1d5db);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      display: inline-block;
+      margin: 0;
     }
 
-    .logo-modern span {
+    .logo span {
       margin-left: 4px;
-      color: #60a5fa;
-      text-shadow: 0 0 10px rgba(96,165,250,0.6);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 1; }
-      100% { opacity: 0.6; }
+      color: #94a3b8;
+      text-shadow: 0 0 6px rgba(255,255,255,0.2);
     }
 
     /* ===== NAV BAR ===== */
@@ -96,6 +89,10 @@
       width: 220px;
     }
 
+    .search-wrap input::placeholder {
+      color: #9ca3af;
+    }
+
     /* ===== NEWS GRID ===== */
     #news {
       display: grid;
@@ -134,6 +131,11 @@
       color: #9ca3af;
     }
 
+    .card h3 {
+      margin: 10px 0;
+      font-size: 17px;
+    }
+
     .card p {
       font-size: 14px;
       color: #d1d5db;
@@ -154,9 +156,9 @@
 
 <header>
 
-  <!-- 🔥 MODERN LOGO -->
-  <div class="logo-modern-wrap">
-    <h1 class="logo-modern">Critiq<span>●</span></h1>
+  <!-- 🔥 FINAL LOGO -->
+  <div class="logo-wrap">
+    <h1 class="logo">Critiq<span>●</span></h1>
   </div>
 
   <!-- NAV -->
