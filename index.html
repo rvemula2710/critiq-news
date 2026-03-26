@@ -9,7 +9,7 @@ const parser = new Parser();
 const PORT = process.env.PORT || 5000;
 
 /* ===========================
-   IMAGE EXTRACTOR (IMPORTANT)
+   IMAGE EXTRACTOR
 =========================== */
 function extractImage(item) {
   return (
@@ -22,7 +22,7 @@ function extractImage(item) {
 }
 
 /* ===========================
-   CLEAN DESCRIPTION
+   CLEAN TEXT
 =========================== */
 function cleanText(text) {
   return text?.replace(/<[^>]+>/g, "") || "";
@@ -91,6 +91,13 @@ function removeDuplicates(arr) {
 }
 
 /* ===========================
+   FILTER ONLY WITH IMAGES
+=========================== */
+function filterWithImages(arr) {
+  return arr.filter(a => a.urlToImage && a.urlToImage.startsWith("http"));
+}
+
+/* ===========================
    NEWS API
 =========================== */
 app.get("/news", async (req, res) => {
@@ -107,7 +114,9 @@ app.get("/news", async (req, res) => {
 
     const unique = removeDuplicates(all);
 
-    res.json({ articles: unique.slice(0, 40) });
+    const withImages = filterWithImages(unique);
+
+    res.json({ articles: withImages.slice(0, 40) });
 
   } catch (err) {
     res.status(500).json({ error: "News fetch failed" });
@@ -131,7 +140,9 @@ app.get("/trending", async (req, res) => {
 
     const unique = removeDuplicates(all);
 
-    res.json({ articles: unique.slice(0, 30) });
+    const withImages = filterWithImages(unique);
+
+    res.json({ articles: withImages.slice(0, 30) });
 
   } catch (err) {
     res.status(500).json({ error: "Trending failed" });
