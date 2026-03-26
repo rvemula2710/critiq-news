@@ -6,23 +6,21 @@
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: Arial;
       background: #0f172a;
       color: white;
     }
 
     header {
-      padding: 15px 20px;
-      font-size: 26px;
-      font-weight: 600;
+      padding: 15px;
+      font-size: 24px;
       background: #020617;
-      border-bottom: 1px solid #1e293b;
     }
 
     .nav {
       display: flex;
-      gap: 15px;
-      padding: 10px 20px;
+      gap: 10px;
+      padding: 10px;
       background: #111827;
       flex-wrap: wrap;
     }
@@ -32,7 +30,6 @@
       border: none;
       color: #cbd5f5;
       cursor: pointer;
-      font-size: 14px;
     }
 
     .nav button:hover {
@@ -43,58 +40,11 @@
       padding: 20px;
     }
 
-    /* HERO + SIDE */
-    .top-section {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    .hero {
-      background: #1e293b;
-      padding: 15px;
-      border-radius: 12px;
-    }
-
-    .hero img {
-      width: 100%;
-      border-radius: 10px;
-    }
-
-    .hero h2 {
-      margin: 10px 0;
-      font-size: 22px;
-    }
-
-    .side-news {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .side-item {
-      background: #1e293b;
-      padding: 10px;
-      border-radius: 10px;
-    }
-
-    /* GRID */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-    }
-
     .card {
       background: #1e293b;
       padding: 10px;
+      margin-bottom: 15px;
       border-radius: 10px;
-      transition: 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
     }
 
     .card img {
@@ -102,29 +52,9 @@
       border-radius: 8px;
     }
 
-    /* LOAD MORE */
-    .load-more {
-      text-align: center;
-      margin: 30px 0;
-    }
-
-    .load-btn {
-      padding: 10px 20px;
-      background: #2563eb;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-    }
-
     a {
       text-decoration: none;
       color: white;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 30px;
     }
   </style>
 </head>
@@ -134,123 +64,123 @@
 <header>Critiq</header>
 
 <div class="nav">
-  <button onclick="changeCategory('general')">General</button>
+  <button onclick="loadPriorityNews()">Home</button>
+  <button onclick="loadTrending()">🔥 Trending</button>
   <button onclick="changeCategory('technology')">Tech</button>
   <button onclick="changeCategory('sports')">Sports</button>
-  <button onclick="changeCategory('world')">World</button>
-  <button onclick="changeCategory('india')">India</button>
-  <button onclick="changeCategory('telangana')">Telangana</button>
-  <button onclick="changeCategory('hyderabad')">Hyderabad</button>
-  <button onclick="changeCategory('iran war')">Iran War</button>
 </div>
 
-<div class="container">
-
-  <div class="top-section">
-    <div id="hero"></div>
-    <div id="side" class="side-news"></div>
-  </div>
-
-  <div id="grid" class="grid"></div>
-
-  <div class="load-more">
-    <button class="load-btn" onclick="loadMore()">Load More</button>
-  </div>
-
-</div>
+<div class="container" id="news"></div>
 
 <script>
 
 const BASE_URL = "https://news-backend-9jt9.onrender.com/news";
 
-let currentCategory = "general";
-let page = 1;
-let allArticles = [];
+/* ===========================
+   PRIORITY NEWS
+=========================== */
+async function loadPriorityNews(){
 
-// Change category
-function changeCategory(category){
-  currentCategory = category;
-  page = 1;
-  allArticles = [];
-  loadNews(true);
-}
+  const queries = [
+    "india",
+    "telangana",
+    "hyderabad",
+    "world"
+  ];
 
-// Load news
-async function loadNews(reset = false){
+  let all = [];
 
-  const grid = document.getElementById("grid");
-
-  if(reset){
-    grid.innerHTML = "<div class='loading'>Loading...</div>";
+  for(let q of queries){
+    const res = await fetch(`${BASE_URL}?q=${q}`);
+    const data = await res.json();
+    all = all.concat(data.articles || []);
   }
 
-  const res = await fetch(`${BASE_URL}?q=${currentCategory}&page=${page}`);
+  renderNews(all);
+}
+
+/* ===========================
+   TRENDING (LAST 12 HOURS)
+=========================== */
+async function loadTrending(){
+
+  const queries = [
+    "hyderabad",
+    "india",
+    "world"
+  ];
+
+  let all = [];
+
+  for(let q of queries){
+    const res = await fetch(`${BASE_URL}?q=${q}`);
+    const data = await res.json();
+    all = all.concat(data.articles || []);
+  }
+
+  // Filter last 12 hours
+  const now = new Date();
+  const filtered = all.filter(a => {
+    if(!a.publishedAt) return false;
+
+    const time = new Date(a.publishedAt);
+    const diff = (now - time) / (1000 * 60 * 60);
+
+    return diff <= 12;
+  });
+
+  renderNews(filtered);
+}
+
+/* ===========================
+   NORMAL CATEGORY
+=========================== */
+async function changeCategory(category){
+
+  const res = await fetch(`${BASE_URL}?q=${category}`);
   const data = await res.json();
 
-  const articles = data.articles || [];
-
-  allArticles = allArticles.concat(articles);
-
-  renderNews();
+  renderNews(data.articles || []);
 }
 
-// Render layout
-function renderNews(){
+/* ===========================
+   RENDER
+=========================== */
+function renderNews(articles){
 
-  const hero = document.getElementById("hero");
-  const side = document.getElementById("side");
-  const grid = document.getElementById("grid");
+  const newsDiv = document.getElementById("news");
+  newsDiv.innerHTML = "";
 
-  hero.innerHTML = "";
-  side.innerHTML = "";
-  grid.innerHTML = "";
+  if(!articles || articles.length === 0){
+    newsDiv.innerHTML = "<p>No news found</p>";
+    return;
+  }
 
-  if(allArticles.length === 0) return;
-
-  // HERO
-  const first = allArticles[0];
-  hero.innerHTML = `
-    <a href="${first.url}" target="_blank">
-      <div class="hero">
-        <img src="${first.urlToImage || ''}">
-        <h2>${first.title}</h2>
-        <p>${first.description || ''}</p>
-      </div>
-    </a>
-  `;
-
-  // SIDE NEWS
-  allArticles.slice(1,4).forEach(a=>{
-    side.innerHTML += `
-      <a href="${a.url}" target="_blank">
-        <div class="side-item">
-          <h4>${a.title}</h4>
-        </div>
-      </a>
-    `;
-  });
-
-  // GRID (FULL FEED)
-  allArticles.slice(4).forEach(a=>{
-    grid.innerHTML += `
+  articles.forEach(a => {
+    newsDiv.innerHTML += `
       <a href="${a.url}" target="_blank">
         <div class="card">
-          <img src="${a.urlToImage || ''}">
-          <h4>${a.title}</h4>
+          ${a.urlToImage ? `<img src="${a.urlToImage}">` : ""}
+          <h3>${a.title}</h3>
+          <p>${a.description || ""}</p>
         </div>
       </a>
     `;
   });
 }
 
-// Load more
-function loadMore(){
-  page++;
-  loadNews();
-}
+/* ===========================
+   AUTO REFRESH TRENDING
+=========================== */
+setInterval(() => {
+  const currentTab = window.currentTab;
+  if(currentTab === "trending"){
+    loadTrending();
+  }
+}, 300000); // 5 mins
 
-// Initial load
-loadNews(true);
+window.currentTab = "home";
+loadPriorityNews();
 
 </script>
 
