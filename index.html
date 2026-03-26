@@ -9,7 +9,27 @@ const parser = new Parser();
 const PORT = process.env.PORT || 5000;
 
 /* ===========================
-   FETCH GOOGLE NEWS
+   IMAGE EXTRACTOR (IMPORTANT)
+=========================== */
+function extractImage(item) {
+  return (
+    item.enclosure?.url ||
+    item.media?.content?.url ||
+    item.media?.thumbnail?.url ||
+    (item.content && item.content.match(/<img.*?src="(.*?)"/)?.[1]) ||
+    null
+  );
+}
+
+/* ===========================
+   CLEAN DESCRIPTION
+=========================== */
+function cleanText(text) {
+  return text?.replace(/<[^>]+>/g, "") || "";
+}
+
+/* ===========================
+   GOOGLE NEWS
 =========================== */
 async function fetchGoogleNews(query) {
   try {
@@ -17,21 +37,21 @@ async function fetchGoogleNews(query) {
     const feed = await parser.parseURL(url);
 
     return feed.items.map(item => ({
-      title: item.title,
+      title: cleanText(item.title),
       url: item.link,
-      description: item.contentSnippet,
+      description: cleanText(item.contentSnippet),
       publishedAt: item.pubDate,
-      urlToImage: item.enclosure?.url || item.media?.content?.url || null
+      urlToImage: extractImage(item)
     }));
 
   } catch (err) {
-    console.log("Google fetch error:", query);
+    console.log("Google error:", query);
     return [];
   }
 }
 
 /* ===========================
-   FETCH RSS (The Hindu, DC)
+   RSS SOURCES
 =========================== */
 const RSS_FEEDS = [
   "https://www.thehindu.com/news/national/feeder/default.rss",
@@ -46,11 +66,11 @@ async function fetchRSSFeeds() {
       const feed = await parser.parseURL(url);
 
       const items = feed.items.map(item => ({
-        title: item.title,
+        title: cleanText(item.title),
         url: item.link,
-        description: item.contentSnippet,
+        description: cleanText(item.contentSnippet),
         publishedAt: item.pubDate,
-        urlToImage: item.enclosure?.url || item.media?.content?.url || null
+        urlToImage: extractImage(item)
       }));
 
       all = all.concat(items);
