@@ -11,24 +11,24 @@
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #020617);
+      background: radial-gradient(circle at top, #0ea5e9, #020617 70%);
       color: white;
     }
 
     header {
       position: sticky;
       top: 0;
-      backdrop-filter: blur(10px);
-      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(25px);
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       padding: 15px;
       text-align: center;
       z-index: 100;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
     h1 {
       margin: 0;
-      font-size: 26px;
+      font-weight: 600;
       letter-spacing: 1px;
     }
 
@@ -38,30 +38,37 @@
 
     input {
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
       width: 240px;
       margin-right: 10px;
       outline: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    input::placeholder {
+      color: #aaa;
     }
 
     button {
       padding: 10px 14px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
-      background: #1f2937;
+      background: rgba(255,255,255,0.1);
       color: white;
       cursor: pointer;
-      transition: 0.2s;
+      transition: 0.3s;
     }
 
     button:hover {
-      background: #06b6d4;
+      background: #0ea5e9;
       color: black;
+      box-shadow: 0 0 10px #0ea5e9;
     }
 
     .active {
-      background: #06b6d4;
+      background: #0ea5e9;
       color: black;
     }
 
@@ -72,8 +79,8 @@
     #news {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
+      gap: 25px;
+      padding: 25px;
     }
 
     .card-link {
@@ -82,24 +89,41 @@
     }
 
     .card {
+      position: relative;
       background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
       padding: 15px;
+      border: 1px solid rgba(255,255,255,0.15);
+      overflow: hidden;
+      transition: 0.3s ease;
+    }
+
+    /* Glow border effect */
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: 20px;
+      background: linear-gradient(120deg, transparent, #0ea5e9, transparent);
+      opacity: 0;
       transition: 0.3s;
-      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .card:hover::before {
+      opacity: 1;
     }
 
     .card:hover {
       transform: translateY(-8px) scale(1.02);
-      border-color: #06b6d4;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.7);
     }
 
     .card img {
       width: 100%;
       height: 180px;
       object-fit: cover;
-      border-radius: 12px;
+      border-radius: 14px;
     }
 
     .card small {
@@ -194,19 +218,12 @@ function displayNews(articles){
   articles.forEach(a => {
     newsDiv.innerHTML += `
       <a href="${a.url}" target="_blank" class="card-link">
-
         <div class="card">
-
           ${a.urlToImage ? `<img src="${a.urlToImage}">` : ""}
-
           <small>${a.source?.name || ""}</small>
-
           <h3>${a.title}</h3>
-
           <p>${getSummary(a.description)}</p>
-
         </div>
-
       </a>
     `;
   });
@@ -214,7 +231,6 @@ function displayNews(articles){
 
 function getSummary(text) {
   if (!text) return "👉 No summary available.";
-
   let words = text.split(" ").slice(0, 15).join(" ");
   return "👉 " + words + "...";
 }
