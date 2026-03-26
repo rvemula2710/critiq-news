@@ -1,164 +1,281 @@
-const express = require("express");
-const cors = require("cors");
-const Parser = require("rss-parser");
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Critiq</title>
 
-const app = express();
-app.use(cors());
-
-const parser = new Parser();
-const PORT = process.env.PORT || 5000;
-
-/* ===========================
-   IMAGE EXTRACTOR
-=========================== */
-function extractImage(item) {
-  return (
-    item.enclosure?.url ||
-    item.media?.content?.url ||
-    item.media?.thumbnail?.url ||
-    (item.content && item.content.match(/<img.*?src="(.*?)"/)?.[1]) ||
-    null
-  );
-}
-
-/* ===========================
-   CLEAN TEXT
-=========================== */
-function cleanText(text) {
-  return text?.replace(/<[^>]+>/g, "") || "";
-}
-
-/* ===========================
-   GOOGLE NEWS
-=========================== */
-async function fetchGoogleNews(query) {
-  try {
-    const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-IN&gl=IN&ceid=IN:en`;
-    const feed = await parser.parseURL(url);
-
-    return feed.items.map(item => ({
-      title: cleanText(item.title),
-      url: item.link,
-      description: cleanText(item.contentSnippet),
-      publishedAt: item.pubDate,
-      urlToImage: extractImage(item)
-    }));
-
-  } catch (err) {
-    console.log("Google error:", query);
-    return [];
-  }
-}
-
-/* ===========================
-   RSS SOURCES
-=========================== */
-const RSS_FEEDS = [
-  "https://www.thehindu.com/news/national/feeder/default.rss",
-  "https://www.deccanchronicle.com/rss_feed/"
-];
-
-async function fetchRSSFeeds() {
-  let all = [];
-
-  for (let url of RSS_FEEDS) {
-    try {
-      const feed = await parser.parseURL(url);
-
-      const items = feed.items.map(item => ({
-        title: cleanText(item.title),
-        url: item.link,
-        description: cleanText(item.contentSnippet),
-        publishedAt: item.pubDate,
-        urlToImage: extractImage(item)
-      }));
-
-      all = all.concat(items);
-
-    } catch (err) {
-      console.log("RSS error:", url);
-    }
-  }
-
-  return all;
-}
-
-/* ===========================
-   REMOVE DUPLICATES
-=========================== */
-function removeDuplicates(arr) {
-  return Array.from(new Map(arr.map(a => [a.title, a])).values());
-}
-
-/* ===========================
-   FILTER ONLY WITH IMAGES
-=========================== */
-function filterWithImages(arr) {
-  return arr.filter(a => a.urlToImage && a.urlToImage.startsWith("http"));
-}
-
-/* ===========================
-   NEWS API
-=========================== */
-app.get("/news", async (req, res) => {
-
-  const query = req.query.q || "india";
-
-  try {
-
-    const google = await fetchGoogleNews(query);
-    const rss = await fetchRSSFeeds();
-    const local = await fetchGoogleNews("hyderabad telangana news");
-
-    let all = [...google, ...rss, ...local];
-
-    const unique = removeDuplicates(all);
-
-    const withImages = filterWithImages(unique);
-
-    res.json({ articles: withImages.slice(0, 40) });
-
-  } catch (err) {
-    res.status(500).json({ error: "News fetch failed" });
-  }
-});
-
-/* ===========================
-   TRENDING API
-=========================== */
-app.get("/trending", async (req, res) => {
-
-  try {
-
-    const queries = ["hyderabad", "telangana", "india"];
-    let all = [];
-
-    for (let q of queries) {
-      const data = await fetchGoogleNews(q);
-      all = all.concat(data);
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont;
+      background: linear-gradient(135deg, #0a0f1c, #0d1b2a);
+      color: white;
     }
 
-    const unique = removeDuplicates(all);
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-    const withImages = filterWithImages(unique);
+    .logo {
+      font-size: 26px;
+      font-weight: 600;
+      margin-right: 20px;
+      letter-spacing: 1px;
+    }
 
-    res.json({ articles: withImages.slice(0, 30) });
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-  } catch (err) {
-    res.status(500).json({ error: "Trending failed" });
-  }
-});
+    .tab {
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: 0.25s;
+      font-size: 14px;
+    }
 
-/* ===========================
-   ROOT
-=========================== */
-app.get("/", (req, res) => {
-  res.send("Critiq Backend Running 🚀");
-});
+    .tab:hover {
+      background: rgba(255,255,255,0.18);
+    }
 
-/* ===========================
-   START SERVER
-=========================== */
-app.listen(PORT, () => {
-  console.log("Server running");
-});
+    .active {
+      background: #4cc9f0;
+      color: black;
+      font-weight: 500;
+    }
+
+    .search {
+      margin-left: auto;
+    }
+
+    input {
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+      gap: 18px;
+      padding: 18px;
+    }
+
+    /* CARD */
+    .card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px) scale(1.01);
+      background: rgba(255,255,255,0.1);
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #111;
+      filter: brightness(0.9);
+    }
+
+    .content {
+      padding: 12px;
+    }
+
+    .title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .desc {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    .load {
+      text-align: center;
+      margin: 20px;
+    }
+
+    button {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 20px;
+      background: #4cc9f0;
+      cursor: pointer;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      opacity: 0.7;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">Critiq</div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="loadNews('india', this)">India</div>
+      <div class="tab" onclick="loadNews('telangana', this)">Telangana</div>
+      <div class="tab" onclick="loadNews('hyderabad', this)">Hyderabad</div>
+      <div class="tab" onclick="loadNews('world', this)">World</div>
+      <div class="tab" onclick="loadTrending(this)">🔥 Trending</div>
+    </div>
+
+    <div class="search">
+      <input type="text" placeholder="Search..." onkeydown="handleSearch(event)">
+    </div>
+  </div>
+
+  <!-- NEWS GRID -->
+  <div class="grid" id="news"></div>
+
+  <div class="load">
+    <button onclick="loadMore()">Load More</button>
+  </div>
+
+  <script>
+
+    const BASE_URL = "https://critiq-backend-0i4w.onrender.com";
+
+    let allArticles = [];
+    let visible = 6;
+
+    /* LOAD NEWS */
+    async function loadNews(q, el){
+
+      setActive(el);
+      showLoading("Loading news...");
+
+      try {
+        const res = await fetch(`${BASE_URL}/news?q=${q}`);
+        const data = await res.json();
+
+        allArticles = data.articles || [];
+        visible = 6;
+
+        if(allArticles.length === 0){
+          showEmpty();
+        } else {
+          render();
+        }
+
+      } catch {
+        showError();
+      }
+    }
+
+    /* TRENDING */
+    async function loadTrending(el){
+
+      setActive(el);
+      showLoading("Loading trending...");
+
+      try {
+        const res = await fetch(`${BASE_URL}/trending`);
+        const data = await res.json();
+
+        allArticles = data.articles || [];
+        visible = 6;
+
+        if(allArticles.length === 0){
+          showEmpty();
+        } else {
+          render();
+        }
+
+      } catch {
+        showError();
+      }
+    }
+
+    /* SEARCH */
+    function handleSearch(e){
+      if(e.key === "Enter"){
+        loadNews(e.target.value);
+      }
+    }
+
+    /* RENDER */
+    function render(){
+      const container = document.getElementById("news");
+
+      container.innerHTML = allArticles.slice(0, visible).map(a => `
+        <div class="card" onclick="window.open('${a.url}', '_blank')">
+          <img loading="lazy"
+               src="${a.urlToImage}"
+               onerror="this.src='https://picsum.photos/400/300';" />
+          <div class="content">
+            <div class="title">${a.title}</div>
+            <div class="desc">${a.description || ''}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* LOAD MORE */
+    function loadMore(){
+      visible += 6;
+      render();
+    }
+
+    /* STATES */
+    function showLoading(msg){
+      document.getElementById("news").innerHTML = `<div class="loading">${msg}</div>`;
+    }
+
+    function showError(){
+      document.getElementById("news").innerHTML = `<div class="loading">Failed to load</div>`;
+    }
+
+    function showEmpty(){
+      document.getElementById("news").innerHTML = `<div class="empty">No news available</div>`;
+    }
+
+    /* ACTIVE TAB */
+    function setActive(el){
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      if(el) el.classList.add("active");
+    }
+
+    /* DEFAULT LOAD */
+    loadNews("india");
+
+  </script>
+
+</body>
+</html>
