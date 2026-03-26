@@ -22,24 +22,24 @@
     }
 
     .logo {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 600;
-      letter-spacing: 1px;
-      margin-right: 30px;
+      margin-right: 20px;
     }
 
     .tabs {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     .tab {
-      padding: 8px 14px;
+      padding: 6px 12px;
       border-radius: 20px;
       background: rgba(255,255,255,0.08);
       cursor: pointer;
       transition: 0.3s;
+      font-size: 14px;
     }
 
     .tab:hover {
@@ -56,7 +56,7 @@
     }
 
     input {
-      padding: 8px 14px;
+      padding: 6px 12px;
       border-radius: 20px;
       border: none;
       outline: none;
@@ -66,22 +66,22 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
-      gap: 20px;
-      padding: 20px;
+      gap: 18px;
+      padding: 18px;
     }
 
     /* CARD */
     .card {
       background: rgba(255,255,255,0.05);
       backdrop-filter: blur(20px);
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
       cursor: pointer;
       transition: 0.3s;
     }
 
     .card:hover {
-      transform: translateY(-5px) scale(1.02);
+      transform: translateY(-4px);
       background: rgba(255,255,255,0.1);
     }
 
@@ -89,20 +89,21 @@
       width: 100%;
       height: 180px;
       object-fit: cover;
+      background: #111;
     }
 
     .content {
-      padding: 15px;
+      padding: 12px;
     }
 
     .title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .desc {
-      font-size: 14px;
+      font-size: 13px;
       opacity: 0.7;
     }
 
@@ -112,11 +113,18 @@
     }
 
     button {
-      padding: 10px 20px;
+      padding: 8px 18px;
       border: none;
       border-radius: 20px;
       background: #4cc9f0;
       cursor: pointer;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      opacity: 0.7;
     }
   </style>
 </head>
@@ -125,7 +133,7 @@
 
   <!-- HEADER -->
   <div class="header">
-    <div class="logo">critiq</div>
+    <div class="logo">Critiq</div>
 
     <div class="tabs">
       <div class="tab active" onclick="loadNews('india', this)">India</div>
@@ -159,13 +167,20 @@
 
       setActive(el);
 
-      const res = await fetch(`${BASE_URL}/news?q=${q}`);
-      const data = await res.json();
+      document.getElementById("news").innerHTML = "<div class='loading'>Loading news...</div>";
 
-      allArticles = data.articles || [];
-      visible = 6;
+      try {
+        const res = await fetch(`${BASE_URL}/news?q=${q}`);
+        const data = await res.json();
 
-      render();
+        allArticles = data.articles || [];
+        visible = 6;
+
+        render();
+
+      } catch (err) {
+        document.getElementById("news").innerHTML = "<div class='loading'>Failed to load news</div>";
+      }
     }
 
     /* TRENDING */
@@ -173,13 +188,20 @@
 
       setActive(el);
 
-      const res = await fetch(`${BASE_URL}/trending`);
-      const data = await res.json();
+      document.getElementById("news").innerHTML = "<div class='loading'>Loading trending...</div>";
 
-      allArticles = data.articles || [];
-      visible = 6;
+      try {
+        const res = await fetch(`${BASE_URL}/trending`);
+        const data = await res.json();
 
-      render();
+        allArticles = data.articles || [];
+        visible = 6;
+
+        render();
+
+      } catch (err) {
+        document.getElementById("news").innerHTML = "<div class='loading'>Failed to load trending</div>";
+      }
     }
 
     /* SEARCH */
@@ -196,7 +218,7 @@
 
       container.innerHTML = allArticles.slice(0, visible).map(a => `
         <div class="card" onclick="window.open('${a.url}', '_blank')">
-          <img src="https://source.unsplash.com/400x300/?news" />
+          <img loading="lazy" src="${a.urlToImage || 'https://via.placeholder.com/400x300'}" />
           <div class="content">
             <div class="title">${a.title}</div>
             <div class="desc">${a.description || ''}</div>
