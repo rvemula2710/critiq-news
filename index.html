@@ -7,7 +7,7 @@
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont;
-      background: linear-gradient(135deg, #0a0f1c, #0d1b2a);
+      background: linear-gradient(135deg, #0b1220, #0d1b2a);
       color: white;
     }
 
@@ -16,19 +16,19 @@
       display: flex;
       align-items: center;
       padding: 16px 24px;
-      backdrop-filter: blur(20px);
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(25px);
+      background: rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       position: sticky;
       top: 0;
       z-index: 100;
     }
 
     .logo {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 600;
-      margin-right: 20px;
       letter-spacing: 1px;
+      margin-right: 20px;
     }
 
     .tabs {
@@ -38,22 +38,20 @@
     }
 
     .tab {
-      padding: 6px 12px;
+      padding: 8px 14px;
       border-radius: 20px;
       background: rgba(255,255,255,0.08);
       cursor: pointer;
-      transition: 0.25s;
-      font-size: 14px;
+      transition: 0.3s;
     }
 
     .tab:hover {
-      background: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.2);
     }
 
     .active {
-      background: #4cc9f0;
+      background: rgba(76,201,240,0.9);
       color: black;
-      font-weight: 500;
     }
 
     .search {
@@ -61,7 +59,7 @@
     }
 
     input {
-      padding: 7px 14px;
+      padding: 8px 14px;
       border-radius: 20px;
       border: none;
       outline: none;
@@ -71,46 +69,33 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
-      gap: 18px;
-      padding: 18px;
+      gap: 20px;
+      padding: 20px;
     }
 
     /* CARD */
     .card {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.06);
       backdrop-filter: blur(20px);
-      border-radius: 14px;
-      overflow: hidden;
+      border-radius: 18px;
+      padding: 16px;
       cursor: pointer;
-      transition: 0.25s ease;
+      transition: 0.3s;
     }
 
     .card:hover {
-      transform: translateY(-4px) scale(1.01);
+      transform: translateY(-6px);
       background: rgba(255,255,255,0.1);
     }
 
-    .card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      background: #111;
-      filter: brightness(0.9);
-    }
-
-    .content {
-      padding: 12px;
-    }
-
     .title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 600;
-      margin-bottom: 6px;
-      line-height: 1.3;
+      margin-bottom: 8px;
     }
 
     .desc {
-      font-size: 13px;
+      font-size: 14px;
       opacity: 0.7;
     }
 
@@ -120,9 +105,9 @@
     }
 
     button {
-      padding: 8px 18px;
-      border: none;
+      padding: 10px 20px;
       border-radius: 20px;
+      border: none;
       background: #4cc9f0;
       cursor: pointer;
     }
@@ -130,21 +115,13 @@
     .loading {
       text-align: center;
       padding: 40px;
-      font-size: 18px;
       opacity: 0.7;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 40px;
-      opacity: 0.6;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- HEADER -->
   <div class="header">
     <div class="logo">Critiq</div>
 
@@ -157,11 +134,10 @@
     </div>
 
     <div class="search">
-      <input type="text" placeholder="Search..." onkeydown="handleSearch(event)">
+      <input placeholder="Search..." onkeydown="handleSearch(event)">
     </div>
   </div>
 
-  <!-- NEWS GRID -->
   <div class="grid" id="news"></div>
 
   <div class="load">
@@ -175,104 +151,63 @@
     let allArticles = [];
     let visible = 6;
 
-    /* LOAD NEWS */
     async function loadNews(q, el){
-
       setActive(el);
-      showLoading("Loading news...");
+      showLoading();
 
-      try {
-        const res = await fetch(`${BASE_URL}/news?q=${q}`);
-        const data = await res.json();
+      const res = await fetch(`${BASE_URL}/news?q=${q}`);
+      const data = await res.json();
 
-        allArticles = data.articles || [];
-        visible = 6;
+      allArticles = data.articles || [];
+      visible = 6;
 
-        if(allArticles.length === 0){
-          showEmpty();
-        } else {
-          render();
-        }
-
-      } catch {
-        showError();
-      }
+      render();
     }
 
-    /* TRENDING */
     async function loadTrending(el){
-
       setActive(el);
-      showLoading("Loading trending...");
+      showLoading();
 
-      try {
-        const res = await fetch(`${BASE_URL}/trending`);
-        const data = await res.json();
+      const res = await fetch(`${BASE_URL}/trending`);
+      const data = await res.json();
 
-        allArticles = data.articles || [];
-        visible = 6;
+      allArticles = data.articles || [];
+      visible = 6;
 
-        if(allArticles.length === 0){
-          showEmpty();
-        } else {
-          render();
-        }
-
-      } catch {
-        showError();
-      }
+      render();
     }
 
-    /* SEARCH */
     function handleSearch(e){
       if(e.key === "Enter"){
         loadNews(e.target.value);
       }
     }
 
-    /* RENDER */
     function render(){
       const container = document.getElementById("news");
 
       container.innerHTML = allArticles.slice(0, visible).map(a => `
         <div class="card" onclick="window.open('${a.url}', '_blank')">
-          <img loading="lazy"
-               src="${a.urlToImage}"
-               onerror="this.src='https://picsum.photos/400/300';" />
-          <div class="content">
-            <div class="title">${a.title}</div>
-            <div class="desc">${a.description || ''}</div>
-          </div>
+          <div class="title">${a.title}</div>
+          <div class="desc">${a.description || ''}</div>
         </div>
       `).join('');
     }
 
-    /* LOAD MORE */
     function loadMore(){
       visible += 6;
       render();
     }
 
-    /* STATES */
-    function showLoading(msg){
-      document.getElementById("news").innerHTML = `<div class="loading">${msg}</div>`;
+    function showLoading(){
+      document.getElementById("news").innerHTML = "<div class='loading'>Loading news...</div>";
     }
 
-    function showError(){
-      document.getElementById("news").innerHTML = `<div class="loading">Failed to load</div>`;
-    }
-
-    function showEmpty(){
-      document.getElementById("news").innerHTML = `<div class="empty">No news available</div>`;
-    }
-
-    /* ACTIVE TAB */
     function setActive(el){
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
       if(el) el.classList.add("active");
     }
 
-    /* DEFAULT LOAD */
     loadNews("india");
 
   </script>
