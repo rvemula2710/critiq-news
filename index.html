@@ -20,40 +20,13 @@
       background: rgba(255,255,255,0.05);
       border-bottom: 1px solid rgba(255,255,255,0.1);
       padding: 20px;
-      text-align: center;
       z-index: 100;
     }
 
-    /* ===== LOGO ===== */
+    /* LOGO */
     .logo-glass-wrap {
-      display: inline-block;
-      padding: 14px 26px;
-      border-radius: 20px;
-      position: relative;
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(18px);
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-      overflow: hidden;
-      animation: floatSoft 6s ease-in-out infinite;
-    }
-
-    .logo-glass-wrap::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 20px;
-      background: radial-gradient(circle at var(--x,50%) var(--y,50%), rgba(255,255,255,0.25), transparent 40%);
-      opacity: 0;
-      transition: 0.3s;
-    }
-
-    .logo-glass-wrap:hover::after { opacity: 1; }
-
-    @keyframes floatSoft {
-      0% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
-      100% { transform: translateY(0); }
+      text-align: center;
+      margin-bottom: 15px;
     }
 
     .logo-text {
@@ -62,48 +35,28 @@
       margin: 0;
     }
 
-    .logo-text span { color: #9ca3af; }
-
-    /* ===== SEARCH ===== */
-    .search-wrap {
-      margin-top: 18px;
+    /* NAV BAR (tabs + search) */
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .search-wrap input {
-      width: 340px;
-      max-width: 90%;
-      padding: 12px 18px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(10px);
-      color: white;
-      outline: none;
-      transition: 0.25s;
-    }
-
-    .search-wrap input:focus {
-      background: rgba(255,255,255,0.12);
-      border-color: rgba(255,255,255,0.3);
-    }
-
-    .search-wrap input::placeholder {
-      color: #9ca3af;
-    }
-
-    /* ===== CATEGORY BUTTONS ===== */
-    .categories {
-      margin-top: 15px;
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     button {
-      padding: 10px 14px;
+      padding: 8px 12px;
       border-radius: 10px;
       border: none;
       background: rgba(255,255,255,0.08);
       color: white;
       cursor: pointer;
-      margin: 4px;
       transition: 0.2s;
     }
 
@@ -115,7 +68,18 @@
       background: rgba(255,255,255,0.25);
     }
 
-    /* ===== NEWS GRID ===== */
+    /* SEARCH BESIDE TABS */
+    .search-wrap input {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      outline: none;
+      width: 220px;
+    }
+
+    /* GRID */
     #news {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -129,28 +93,14 @@
     }
 
     .card {
-      position: relative;
       background: rgba(255,255,255,0.05);
       backdrop-filter: blur(18px);
       border-radius: 20px;
       padding: 15px;
       border: 1px solid rgba(255,255,255,0.12);
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      overflow: hidden;
       transition: 0.25s;
     }
-
-    .card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 20px;
-      background: radial-gradient(circle at var(--x,50%) var(--y,50%), rgba(255,255,255,0.2), transparent 50%);
-      opacity: 0;
-      transition: 0.3s;
-    }
-
-    .card:hover::after { opacity: 1; }
 
     .card:hover {
       transform: translateY(-6px);
@@ -167,10 +117,6 @@
       color: #9ca3af;
     }
 
-    .card h3 {
-      margin: 10px 0;
-    }
-
     .card p {
       font-size: 14px;
       color: #d1d5db;
@@ -182,7 +128,6 @@
 
     .loading {
       text-align: center;
-      font-size: 20px;
       padding: 50px;
     }
   </style>
@@ -192,19 +137,28 @@
 
 <header>
 
-  <div class="logo-glass-wrap" id="logoGlass">
+  <div class="logo-glass-wrap">
     <h1 class="logo-text">Critiq<span>.</span></h1>
   </div>
 
-  <!-- 🔍 SEARCH -->
-  <div class="search-wrap">
-    <input type="text" id="searchInput" placeholder="Search news...">
-  </div>
+  <!-- 🔥 NAV BAR -->
+  <div class="nav-bar">
 
-  <div class="categories">
-    <button onclick="setCategory('general', this)" class="active">General</button>
-    <button onclick="setCategory('technology', this)">Tech</button>
-    <button onclick="setCategory('sports', this)">Sports</button>
+    <div class="tabs">
+      <button onclick="setCategory('general', this)" class="active">General</button>
+      <button onclick="setCategory('technology', this)">Tech</button>
+      <button onclick="setCategory('sports', this)">Sports</button>
+      <button onclick="setCategory('world', this)">World News</button>
+      <button onclick="setCategory('india', this)">India</button>
+      <button onclick="setCategory('telangana', this)">Telangana</button>
+      <button onclick="setCategory('hyderabad', this)">Hyderabad</button>
+      <button onclick="setCategory('iran war', this)">Iran War</button>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Search news...">
+    </div>
+
   </div>
 
 </header>
@@ -215,24 +169,8 @@
 
 const BASE_URL = "https://news-backend-9jt9.onrender.com/news";
 
-/* Liquid glass effect */
-function applyLiquidEffect(selector){
-  document.querySelectorAll(selector).forEach(el => {
-    el.addEventListener("mousemove", e => {
-      const rect = el.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      el.style.setProperty('--x', x + '%');
-      el.style.setProperty('--y', y + '%');
-    });
-  });
-}
-
-applyLiquidEffect('.card');
-applyLiquidEffect('#logoGlass');
-
 function setCategory(category, btn){
-  document.querySelectorAll(".categories button").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   loadNews(category);
 }
@@ -281,8 +219,6 @@ function displayNews(articles){
       </a>
     `;
   });
-
-  applyLiquidEffect('.card');
 }
 
 function getSummary(text) {
@@ -291,7 +227,6 @@ function getSummary(text) {
   return "👉 " + words + "...";
 }
 
-/* ENTER KEY SEARCH */
 document.getElementById("searchInput").addEventListener("keypress", function(e){
   if(e.key === "Enter"){
     searchNews();
